@@ -11,5 +11,6 @@ namespace TcpServer {
     void loop();
 
     bool initialized();
+    void networkChanged(bool hasIP, bool linkState);
 
 }

@@ -4,6 +4,8 @@
 #include <Display.h>
 #include <LED.h>
 
+using namespace qindesign::network;
+
 // implements http://openpixelcontrol.org/
 
 namespace OpenPixelControl {

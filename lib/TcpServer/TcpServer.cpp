@@ -2,100 +2,108 @@
 #include <Util.h>
 #include <SPI.h>
 #include <BranchController.h>
-#include <Ethernet.h>
+#include <QNEthernet.h>
 #include <Display.h>
 #include <Persist.h>
 #include <MacAddress.h>
 #include <OpenPixelControl.h>
 #include <WebServer.h>
 
+using namespace qindesign::network;
 
-namespace TcpServer {
+namespace TcpServer
+{
 
-    enum Status { uninitialized, noHardware, noCable, noDHCP, ready };
+    enum Status
+    {
+        uninitialized,
+        noHardware,
+        noCable,
+        noDHCP,
+        ready
+    };
     Status status = uninitialized;
 
-    const char* rgchRetry = "Press AUTO to connect";
+    const char *rgchRetry = "Press AUTO to connect";
 
-    void setup() {
+    void setup()
+    {
 
-        MacAddress::read();
-        Ethernet.init(pinEthernetCS);
+        uint8_t mac[6];
+        Ethernet.macAddress(mac); // This is informative; it retrieves, not sets
+        dbgprintf("MAC = %02x:%02x:%02x:%02x:%02x:%02x\r\n",
+                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-        // Wait up to 5 seconds for linkStatus to return LinkON , because
-        // sometimes when the hardware is first
-        // powering up it still returns LinkOFF even if there is a cable.
+        // Listen for link changes
+        Ethernet.onLinkState([](bool state)
+                             {
+            if (state) {
+            dbgprintf("[Ethernet] Link ON, %d Mbps, %s duplex\r\n",
+                    Ethernet.linkSpeed(),
+                    Ethernet.linkIsFullDuplex() ? "Full" : "Half");
+            } else {
+            dbgprintf("[Ethernet] Link OFF\r\n");
+            }
+            networkChanged(Ethernet.localIP() != INADDR_NONE, state); });
 
-        Display::status(0, "Obtaining IP Address");
-        uint32_t mTimeout = millis() + 5000;
-        while (millis() < mTimeout && Ethernet.linkStatus() == LinkOFF)
+        // Listen for address changes
+        Ethernet.onAddressChanged([]()
+                                  {
+            IPAddress ip = Ethernet.localIP();
+            bool hasIP = (ip != INADDR_NONE);
+            if (hasIP) {
+            IPAddress subnet = Ethernet.subnetMask();
+            IPAddress gw = Ethernet.gatewayIP();
+            IPAddress dns = Ethernet.dnsServerIP();
+
+            dbgprintf("[Ethernet] Address changed:\r\n"
+                    "    Local IP = %u.%u.%u.%u\r\n"
+                    "    Subnet   = %u.%u.%u.%u\r\n"
+                    "    Gateway  = %u.%u.%u.%u\r\n"
+                    "    DNS      = %u.%u.%u.%u\r\n",
+                    ip[0], ip[1], ip[2], ip[3],
+                    subnet[0], subnet[1], subnet[2], subnet[3],
+                    gw[0], gw[1], gw[2], gw[3],
+                    dns[0], dns[1], dns[2], dns[3]);
+            } else {
+            dbgprintf("[Ethernet] Address changed: No IP address\r\n");
+            }
+
+            // Tell interested parties the network state, for example, servers,
+            // SNTP clients, and other sub-programs that need to know whethe
+            // to stop/start/restart/etc
+            networkChanged(hasIP, Ethernet.linkState()); });
+
+        dbgprintf("Starting Ethernet with DHCP...\r\n");
+        if (!Ethernet.begin())
         {
-            delay(10);
-        }
-
-        if (Ethernet.linkStatus() == LinkOFF)
-        {
-            dbgprintf("Ethernet link status OFF\n");
-            status = noCable;
-            Display::status(0, "Cable Disconnected");
-            Display::status(3, rgchRetry);
+            dbgprintf("Failed to start Ethernet\r\n");
             return;
-        }        
-
-        if (Persist::data.static_ip)
-        {
-            dbgprintf("Connecting using static IP address\n");
-            Ethernet.begin(MacAddress::mac, Persist::data.ip_addr);
-
-            // Check for Ethernet hardware present
-            if (Ethernet.hardwareStatus() == EthernetNoHardware) 
-            {
-                dbgprintf("No Ethernet Hardware\n");
-                status = noHardware;
-                Display::status(0, "No ethernet port");
-                return;
-            }
-
-        }
-        else
-        {
-            dbgprintf("DHCP beginning\n");
-            if (0 == Ethernet.begin(MacAddress::mac))
-            {
-
-                // Check for Ethernet hardware present
-                if (Ethernet.hardwareStatus() == EthernetNoHardware) 
-                {
-                    dbgprintf("No Ethernet Hardware\n");
-                    status = noHardware;
-                    Display::status(0, "No ethernet port");
-                    return;
-                }
-
-                dbgprintf("No DHCP Server\n");
-                status = noDHCP;
-                Display::status(0, "No DHCP Server");
-                Display::status(3, rgchRetry);
-                return;
-            }
         }
 
-        char rgch[22];
-        sprintf(rgch, "IP %d.%d.%d.%d", Ethernet.localIP()[0], Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3]);
-        Display::status(0, rgch);
-
-        dbgprintf("DHCP IP address %d.%d.%d.%d\n", Ethernet.localIP()[0], Ethernet.localIP()[1], Ethernet.localIP()[2], Ethernet.localIP()[3] );
-        dbgprintf("DHCP Net Mask   %d.%d.%d.%d\n", Ethernet.subnetMask()[0], Ethernet.subnetMask()[1], Ethernet.subnetMask()[2], Ethernet.subnetMask()[3] );
-        dbgprintf("DHCP Gateway    %d.%d.%d.%d\n", Ethernet.gatewayIP()[0], Ethernet.gatewayIP()[1], Ethernet.gatewayIP()[2], Ethernet.gatewayIP()[3] );
-
-        OpenPixelControl::setup();
-        WebServer::setup();
-        status = ready;
-
+        
     }
 
+    // The address or link has changed. For example, a DHCP address arrived.
+    void networkChanged(bool hasIP, bool linkState)
+    {
+        if (!hasIP || !linkState)
+        {
+            return;
+        }
 
-    void loop() {
+        // Start the server and keep it up
+        if (status != ready)
+        {
+            dbgprintf("Starting OPC and web servers");
+            OpenPixelControl::setup();
+            WebServer::setup();
+            status = ready;
+        }
+    }
+
+    void loop()
+    {
 
         if (status != ready)
             return;
@@ -104,10 +112,10 @@ namespace TcpServer {
         WebServer::loop();
 
         Ethernet.maintain();
-
     }
 
-    bool initialized() {
+    bool initialized()
+    {
         return (status == ready);
     }
 

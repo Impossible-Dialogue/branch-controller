@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <Ethernet.h>
+#include <QNEthernet.h>
 
 //
 // implements a web server used for 

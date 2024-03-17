@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <WebServer.h>
-#include <Ethernet.h>
+#include <QNEthernet.h>
 #include <Persist.h>
 #include <LED.h>
 #include <Util.h>
+
+using namespace qindesign::network;
 
 char *strsep(char **stringp, const char *delim);
 

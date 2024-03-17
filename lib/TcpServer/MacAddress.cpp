@@ -6,29 +6,10 @@ namespace MacAddress {
  
     uint8_t mac[6];
 
-    // http://forum.pjrc.com/threads/91-teensy-3-MAC-address
-    void readpart(uint8_t word, uint8_t *mac, uint8_t offset) {
-
-        cli();
-        
-        FTFL_FCCOB0 = 0x41;             // Selects the READONCE command
-        FTFL_FCCOB1 = word;             // read the given word of read once area
-
-        // launch command and wait until complete
-        FTFL_FSTAT = FTFL_FSTAT_CCIF;
-        while(!(FTFL_FSTAT & FTFL_FSTAT_CCIF));
-
-        *(mac+offset) =   FTFL_FCCOB5;       // collect only the top three bytes,
-        *(mac+offset+1) = FTFL_FCCOB6;       // in the right orientation (big endian).
-        *(mac+offset+2) = FTFL_FCCOB7;       // Skip FTFL_FCCOB4 as it's always 0.
-
-        sei();
-    }
-
     void read() {
         
-        readpart(0xe,mac,0);
-        readpart(0xf,mac,3);
+        for(uint8_t by=0; by<2; by++) mac[by]=(HW_OCOTP_MAC1 >> ((1-by)*8)) & 0xFF;
+        for(uint8_t by=0; by<4; by++) mac[by+2]=(HW_OCOTP_MAC0 >> ((3-by)*8)) & 0xFF;
 
         char rgch[22];
         sprintf(rgch, "MAC %02X:%02X:%02X:%02X:%02X:%02X",
