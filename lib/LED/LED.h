@@ -7,10 +7,8 @@
 
 #include <Arduino.h>
 #include <BranchController.h>
-#define USE_OCTOWS2811
 #include <OctoWS2811.h>
-#define FASTLED_INTERNAL
-#include <FastLED.h>
+
 
 namespace LED {
 
@@ -20,13 +18,13 @@ namespace LED {
     void load_persistant_data();
     void loop();
 
-    void setSolidColor(CRGB rgb);
-    uint8_t brighter();
-    uint8_t dimmer();
+    void setSolidColor(int rgb);
+    void setPixel(int strip, int led, int rgb);
+    void setPixel(int strip, int led, uint8_t r, uint8_t g, uint8_t b);
     void testPattern();
     bool togglePower();
     void openPixelClientConnection(bool f);
-    CRGB* getRGBAddress(uint8_t iStrip, uint32_t nLEDs);
     void CalculateFrameRate();
+    void show();
 
 }

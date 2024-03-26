@@ -30,15 +30,7 @@ void setup() {
 
 
 void loop() {
-
-    static unsigned int lastIrCode = 0;
-
     Heartbeat::loop();
     TcpServer::loop();
     LED::loop();
-
-    EVERY_N_SECONDS(30)
-    {
-        dbgprintf("Free memory: %u\n", Util::FreeMem() );
-    }
 }

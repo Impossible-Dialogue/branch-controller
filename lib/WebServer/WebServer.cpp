@@ -119,40 +119,28 @@ namespace WebServer {
             {
                 if (!strcmp(pszTok, "r"))
                 {
-                    LED::setSolidColor(CRGB::Red);
+                    LED::setSolidColor(RED);
                     return;
                 }
                 else if (!strcmp(pszTok, "g"))
                 {
-                    LED::setSolidColor(CRGB::Green);
+                    LED::setSolidColor(GREEN);
                     return;
                 }
                 else if (!strcmp(pszTok, "b"))
                 {
-                    LED::setSolidColor(CRGB::Blue);
+                    LED::setSolidColor(BLUE);
                     return;
                 }
                 else if (!strcmp(pszTok, "w"))
                 {
-                    LED::setSolidColor(CRGB::White);
+                    LED::setSolidColor(WHITE);
                     return;
                 }
                 else if (!strncmp(pszTok, "w=", 2))
                     Persist::data.max_power = atoi(pszTok + 2);
                 else if (!strncmp(pszTok, "o=", 2))
                     Persist::data.first_color = pszTok[2];
-                else if (!strncmp(pszTok, "c=", 2))
-                    Persist::data.color_correction = strtol(pszTok + 2, NULL, 16);
-                else if (!strncmp(pszTok, "t=", 2))
-                    Persist::data.color_temperature = strtol(pszTok + 2, NULL, 16);
-                else if (!strncmp(pszTok, "b=", 2)) {
-                    Persist::data.brightness = min(255, atoi(pszTok + 2));
-                    LEDS.setBrightness(Persist::data.brightness);
-                    Persist::data.gamma_correction = false; // because g= will be missing if gamma correction is unchecked
-                    Persist::data.static_ip = false;        // because s= will be missing if static ip is unchecked
-                }
-                else if (!strncmp(pszTok, "g=", 2))
-                    Persist::data.gamma_correction = (pszTok[2] == '1');
                 else if (!strncmp(pszTok, "s=", 2))
                     Persist::data.static_ip = (pszTok[2] == '1');
 
@@ -210,29 +198,6 @@ namespace WebServer {
 
                         ">GRB</option>"
                     "</select>"
-                    "<br>"
-                    "Color Correction: "
-                    "<input name=c value="
-                    
-                            ); client.println(Persist::data.color_correction, 16); client.println(
-
-                    "> (hex RGB)"
-                    "<br>"
-                    "Color Temperature: "
-                    "<input name=t value="
-                    
-                            ); client.println(Persist::data.color_temperature, 16); client.println(
-                    
-                    "> (hex RGB)"
-                    "<br>"
-                    "Brightness: "
-                    "<input name=b value="
-                    
-                            ); client.println(Persist::data.brightness); client.println(
-                    
-                    "> (0-255)"
-                    "<br>"
-                    "<input type=checkbox id=g name=g value=1 checked><label for=g>Gamma Correction (Not implemented)</label>"
                     "<br>"
                     "<input type=checkbox id=s name=s value=1 "
                     

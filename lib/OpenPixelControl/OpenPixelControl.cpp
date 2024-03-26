@@ -58,6 +58,8 @@ namespace OpenPixelControl {
     // parse this message -- we're just going to swallow it.
     bool bThrowAwayMessage = false;
 
+    uint8_t read_buffer[LEDS_PER_STRIP * 3];
+
     void loop() {
 
         if (status == ready)
@@ -152,7 +154,7 @@ namespace OpenPixelControl {
                     channel = 1;
                     bThrowAwayMessage = true;
                 }
-                else if (cbMessage > (3 * MAX_LEDS_PER_STRIP))
+                else if (cbMessage > (3 * LEDS_PER_STRIP))
                 {
                     dbgprintf("OpenPixelControl - too many pixels per strip (%d)\n", cbMessage / 3);
                     Display::status(3, "OPC TOO MANY PIXELS");
@@ -198,7 +200,7 @@ namespace OpenPixelControl {
         //      -- the number of bytes available
         //      -- the number of bytes that remain to be read (cbMessage - ixRGB)
 
-        uint8_t *pstrip = (uint8_t*) LED::getRGBAddress(channel-1, cbMessage / 3);
+        uint8_t *pstrip = read_buffer;
         size_t cbToRead = min(cbAvail, cbMessage - ixRGB);
         
         if (bThrowAwayMessage)
@@ -218,13 +220,17 @@ namespace OpenPixelControl {
         }
 
         uint32_t cbRead = client.read(pstrip + ixRGB, cbToRead);
+        for (int i = 0; i < LEDS_PER_STRIP; i++)
+        {
+            LED::setPixel(channel - 1, i, read_buffer[(i) * 3], read_buffer[(i * 3) + 1], read_buffer[(i * 3) + 2]);
+        } 
         ixRGB += cbRead;
 
         if (ixRGB >= cbMessage)
         {
             // done!
             if (bNeedToShow) {
-                FastLED.show();
+                LED::show();
                 LED::CalculateFrameRate();
                 bNeedToShow = false;
             }
