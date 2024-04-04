@@ -163,7 +163,7 @@ namespace LED {
         {
             char rgchBuf[CB_DISPLAY_LINE];
             sprintf(rgchBuf,"Frame rate: %u\n", cFrames);
-            dbgprintf(rgchBuf);
+            // dbgprintf(rgchBuf);
             Display::status(2,rgchBuf);
             cFrames = 0;
             tmFrameStart = millis();

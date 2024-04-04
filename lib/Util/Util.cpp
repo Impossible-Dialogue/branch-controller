@@ -5,6 +5,8 @@
 
 // better debugging. Inspired from https://gist.github.com/asheeshr/9004783 with some modifications
 
+#define DEBUG
+
 namespace Util {
 
     void setup(void) {
@@ -35,7 +37,7 @@ namespace Util {
 
 
 void dbgprintf(char const* pszFmt UNUSED_IN_RELEASE, ... ) {
-
+    
     #ifdef DEBUG
         char const* pszTmp;
 

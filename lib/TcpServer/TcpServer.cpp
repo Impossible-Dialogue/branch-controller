@@ -8,6 +8,7 @@
 #include <MacAddress.h>
 #include <OpenPixelControl.h>
 #include <WebServer.h>
+#include <Ota.h>
 
 using namespace qindesign::network;
 
@@ -80,8 +81,6 @@ namespace TcpServer
             dbgprintf("Failed to start Ethernet\r\n");
             return;
         }
-
-        
     }
 
     // The address or link has changed. For example, a DHCP address arrived.
@@ -95,9 +94,10 @@ namespace TcpServer
         // Start the server and keep it up
         if (status != ready)
         {
-            dbgprintf("Starting OPC and web servers");
+            dbgprintf("Starting OPC and web servers\n");
             OpenPixelControl::setup();
             WebServer::setup();
+            Ota::setup();
             status = ready;
         }
     }

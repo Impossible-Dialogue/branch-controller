@@ -11,6 +11,7 @@
 #include <TcpServer.h>
 #include <LED.h>
 #include <Persist.h>
+#include <Ota.h>
 
 void setup() {
 
@@ -22,9 +23,8 @@ void setup() {
     Display::setup();
     TcpServer::setup();
     LED::setup();
-
+    
     dbgprintf("BranchController Setup Complete\n");
-
 }
 
 
@@ -33,4 +33,5 @@ void loop() {
     Heartbeat::loop();
     TcpServer::loop();
     LED::loop();
+    Ota::loop();
 }
