@@ -44,7 +44,7 @@ int firmware_buffer_init( uint32_t *buffer_addr, uint32_t *buffer_size )
 
   // buffer will begin at first sector ABOVE code and below FLASH_RESERVE
   // start at bottom of FLASH_RESERVE and work down until non-erased flash found
-  *buffer_addr = FLASH_BASE_ADDR + FLASH_SIZE - FLASH_RESERVE - 4;
+  *buffer_addr = FLASH_BASE_ADDR + FLASH_SIZE - FLASH_RESERVE - 4*100000;
   while (*buffer_addr > 0 && *((uint32_t *)*buffer_addr) == 0xFFFFFFFF)
     *buffer_addr -= 4;
   *buffer_addr += 4; // first address above code
