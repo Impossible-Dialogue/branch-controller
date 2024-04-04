@@ -30,38 +30,38 @@ namespace Persist {
         bSig[1] = EEPROM.read(1);
 
         dbgprintf("Signature read - %d %d\n", bSig[0], bSig[1] );
-        // if (bSig[0] == 'b' && bSig[1] == 'C')
-        // {
-        //     // read EEPROM now - start with cb!
-        //     uint16_t cbOnDisk = 0;
-        //     uint8_t* pb = (uint8_t*) &cbOnDisk;
-        //     pb[0] = EEPROM.read(2);
-        //     pb[1] = EEPROM.read(3);
+        if (bSig[0] == 'b' && bSig[1] == 'C')
+        {
+            // read EEPROM now - start with cb!
+            uint16_t cbOnDisk = 0;
+            uint8_t* pb = (uint8_t*) &cbOnDisk;
+            pb[0] = EEPROM.read(2);
+            pb[1] = EEPROM.read(3);
 
-        //     dbgprintf("Structure on disk is %d bytes\n", cbOnDisk);
+            dbgprintf("Structure on disk is %d bytes\n", cbOnDisk);
 
-        //     // Don't read more than sizeof(data) or cbOnDisk
-        //     uint8_t* pbData = (uint8_t*) &data;
-        //     uint16_t cbToRead = min(cbOnDisk, sizeof(data)) - 2;    // -2 because we're not reading cb again
-        //     dbgprintf("\n");
-        //     dbgprintf("\n");
-        //     for (uint16_t i = 0; i < cbToRead; i++)
-        //     {
-        //         pbData[i + 2] = EEPROM.read( i + 4 );               // skip over signature and cb
-        //         dbgprintf("%x ", pbData[i+2]);
-        //     }
-        //     dbgprintf("\n");
-        //     dbgprintf("\n");
+            // Don't read more than sizeof(data) or cbOnDisk
+            uint8_t* pbData = (uint8_t*) &data;
+            uint16_t cbToRead = min(cbOnDisk, sizeof(data)) - 2;    // -2 because we're not reading cb again
+            dbgprintf("\n");
+            dbgprintf("\n");
+            for (uint16_t i = 0; i < cbToRead; i++)
+            {
+                pbData[i + 2] = EEPROM.read( i + 4 );               // skip over signature and cb
+                // dbgprintf("%x ", pbData[i+2]);
+            }
+            dbgprintf("\n");
+            dbgprintf("\n");
 
-        // }
-        // else
+        }
+        else
         {
             dbgprintf("Signature not found - not reading from EEPROM\n");
+            write();
         }
 
-        dbgprintf("cb: %d color: %x,%x,%x  pattern: %d  brightness: %d\n"
-                  "       max_power: %d  first_color: %c  color correction: %x\n"
-                  "       color temperature: %x  gamma correction: %d\n"
+        dbgprintf("cb: %d color: %x pattern: %d  brightness: %d\n"
+                  "       max_power: %d  first_color: %c \n"
                   "       static ip: %d  ip addr: %d.%d.%d.%d\n",
             data.cb,
             data.rgbSolidColor,
