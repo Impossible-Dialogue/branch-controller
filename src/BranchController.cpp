@@ -12,6 +12,8 @@
 #include <LED.h>
 #include <Persist.h>
 #include <Ota.h>
+#include <Imu.h>
+
 
 void setup() {
 
@@ -23,6 +25,7 @@ void setup() {
     Display::setup();
     TcpServer::setup();
     LED::setup();
+    Imu::setup();
     
     dbgprintf("BranchController Setup Complete\n");
 }
@@ -34,4 +37,5 @@ void loop() {
     TcpServer::loop();
     LED::loop();
     Ota::loop();
+    Imu::loop();
 }
