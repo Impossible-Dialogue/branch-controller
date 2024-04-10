@@ -32,6 +32,9 @@ namespace LED {
 
     int make_color_rgb(unsigned int red, unsigned int green, unsigned int blue)
     {
+        if (red > 255) red = 255;
+        if (green > 255) green = 255;
+        if (blue > 255) blue = 255;
         return (red << 16) | (green << 8) | blue;
     }
 
@@ -133,18 +136,21 @@ namespace LED {
 
         static uint8_t hue = 0;
 
+        // dbgprintf("%d\n", hue);
+
         for(int i = 0; i < NUM_STRIPS; i++) {
             for(int j = 0; j < LEDS_PER_STRIP; j++) {
-                setPixel(i, j, make_color_hsl((32*i) + hue+j,192,255));
+                // setPixel(i, j, make_color_hsl((32*i) + hue+j,100,100));
+                setPixel(i, j, make_color_rgb(hue, 0, 0));
             }
         }
 
-        // Set the first n leds on each strip to show which strip it is
-        for(int i = 0; i < NUM_STRIPS; i++) {
-            for(int j = 0; j <= i; j++) {
-                setPixel(i , j, make_color_rgb(0x65,0x43,0x21));
-            }
-        }
+        // // Set the first n leds on each strip to show which strip it is
+        // for(int i = 0; i < NUM_STRIPS; i++) {
+        //     for(int j = 0; j <= i; j++) {
+        //         setPixel(i , j, make_color_rgb(0x65,0x43,0x21));
+        //     }
+        // }
 
         hue++;
 
