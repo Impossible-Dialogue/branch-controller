@@ -20,6 +20,11 @@
         "iosfwd": "cpp",
         "new": "cpp",
         "sstream": "cpp",
-        "streambuf": "cpp"
+        "streambuf": "cpp",
+        "regex": "cpp",
+        "random": "cpp",
+        "limits": "cpp",
+        "bitset": "cpp",
+        "memory": "cpp"
     }
 }
