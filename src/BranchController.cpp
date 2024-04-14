@@ -36,6 +36,5 @@ void loop() {
     Heartbeat::loop();
     TcpServer::loop();
     LED::loop();
-    Ota::loop();
     Imu::loop();
 }

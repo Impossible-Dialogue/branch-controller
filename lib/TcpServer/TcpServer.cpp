@@ -9,6 +9,7 @@
 #include <OpenPixelControl.h>
 #include <WebServer.h>
 #include <Ota.h>
+#include <Mqtt.h>
 
 using namespace qindesign::network;
 
@@ -98,6 +99,7 @@ namespace TcpServer
             OpenPixelControl::setup();
             WebServer::setup();
             Ota::setup();
+            Mqtt::setup();
             status = ready;
         }
     }
@@ -110,6 +112,8 @@ namespace TcpServer
 
         OpenPixelControl::loop();
         WebServer::loop();
+        Ota::loop();
+        Mqtt::loop();
 
         Ethernet.maintain();
     }
