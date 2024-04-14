@@ -3,7 +3,7 @@
 #include <QNEthernet.h>
 #include <Persist.h>
 #include <LED.h>
-#include <Util.h>
+#include <Logger.h>
 
 using namespace qindesign::network;
 
@@ -40,7 +40,7 @@ namespace WebServer {
             client = server.available();
             if (client)
             {
-                dbgprintf("Web client connected\n");
+                Logger.printf("Web client connected\n");
                 ixRequest = 0;
                 status = connected;
             }
@@ -50,7 +50,7 @@ namespace WebServer {
         {
             if (!client.connected())
             {
-                dbgprintf("Web client disconnected\n");
+                Logger.printf("Web client disconnected\n");
                 status = ready;
                 return;
             }
@@ -107,7 +107,7 @@ namespace WebServer {
 
     void process_get(char* szGet)
     {
-        dbgprintf("GET: [%s]\n", szGet);
+        Logger.printf("GET: [%s]\n", szGet);
 
         if (!strcmp("/", szGet))
             return;
@@ -156,7 +156,7 @@ namespace WebServer {
 
 
                 else
-                    dbgprintf("unidentified token: {%s}\n", pszTok);
+                    Logger.printf("unidentified token: {%s}\n", pszTok);
             }
         }
 

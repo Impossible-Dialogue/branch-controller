@@ -1,5 +1,6 @@
 #include "Mqtt.h"
 
+#include <Logger.h>
 #include <QNEthernet.h>
 #include <PubSubClient.h>
 
@@ -17,23 +18,24 @@ namespace Mqtt
 
     boolean reconnect()
     {
-        Serial.print("Attempting to connect to the MQTT broker: ");
-        Serial.println(broker);
+        Logger.print("Attempting to connect to the MQTT broker: ");
+        Logger.println(broker);
         if (client.connect("teensy"))
         {
-            Serial.println("connected");
+            Logger.println("MPTT connected");
         }
         else
         {
-            Serial.print("failed, rc=");
-            Serial.print(client.state());
-            Serial.println(" trying again in 5 seconds");
+            Logger.print("failed, rc=");
+            Logger.print(client.state());
+            Logger.println(" trying again in 5 seconds");
         }
         return client.connected();
     }
 
     void setup()
     {
+        Logger.setClient(client);
         client.setServer(broker, port);
         lastReconnectAttempt = 0;
     }

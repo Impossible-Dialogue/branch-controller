@@ -5,6 +5,7 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
+#include <Logger.h>
 #include <Mqtt.h>
 
 namespace Imu
@@ -17,7 +18,7 @@ namespace Imu
         if (!bno.begin())
         {
             /* There was a problem detecting the BNO055 ... check your connections */
-            Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+            Logger.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
             return;
         }
 

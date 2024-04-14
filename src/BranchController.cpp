@@ -13,11 +13,11 @@
 #include <Persist.h>
 #include <Ota.h>
 #include <Imu.h>
-
+#include <Logger.h>
 
 void setup() {
 
-    dbgprintf("Begin\n");
+    Logger.println("Begin");
 
     Heartbeat::setup();
     Util::setup();
@@ -27,7 +27,7 @@ void setup() {
     LED::setup();
     Imu::setup();
     
-    dbgprintf("BranchController Setup Complete\n");
+    Logger.println("BranchController Setup Complete");
 }
 
 

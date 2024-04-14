@@ -2,6 +2,7 @@
 #include <Util.h>
 #include <Persist.h>
 #include <Display.h>
+#include <Logger.h>
 
 namespace LED {
     // Any group of digital pins may be used
@@ -94,7 +95,7 @@ namespace LED {
     void load_persistant_data() {
         pattern = (enum Pattern) Persist::data.pattern;
         rgbSolidColor = Persist::data.rgbSolidColor;
-        dbgprintf("Color order is %c\n", Persist::data.first_color);
+        Logger.printf("Color order is %c\n", Persist::data.first_color);
     }
 
     void show_color(int color) {
@@ -136,7 +137,7 @@ namespace LED {
 
         static uint8_t hue = 0;
 
-        // dbgprintf("%d\n", hue);
+        // Logger.printf("%d\n", hue);
 
         for(int i = 0; i < NUM_STRIPS; i++) {
             for(int j = 0; j < LEDS_PER_STRIP; j++) {
@@ -169,7 +170,7 @@ namespace LED {
         {
             char rgchBuf[CB_DISPLAY_LINE];
             sprintf(rgchBuf,"Frame rate: %u\n", cFrames);
-            // dbgprintf(rgchBuf);
+            // Logger.print(rgchBuf);
             Display::status(2,rgchBuf);
             cFrames = 0;
             tmFrameStart = millis();
