@@ -38,6 +38,7 @@ namespace Mqtt
         Logger.setClient(client);
         client.setServer(broker, port);
         lastReconnectAttempt = 0;
+        Logger.println("MQTT ready");
     }
 
     void loop()

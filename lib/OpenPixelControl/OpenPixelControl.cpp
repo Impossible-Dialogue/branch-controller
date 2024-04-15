@@ -36,7 +36,7 @@ namespace OpenPixelControl {
 
         server.begin();
         status = ready;
-
+        Logger.println("Open Pixel Control ready");
     }
 
     // ixHeader is the index we are at in the current OPC message header

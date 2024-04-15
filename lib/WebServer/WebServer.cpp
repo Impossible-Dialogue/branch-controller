@@ -29,7 +29,7 @@ namespace WebServer {
 
         server.begin();
         status = ready;
-
+        Logger.println("Webserver ready");
     }
 
     void loop() {
