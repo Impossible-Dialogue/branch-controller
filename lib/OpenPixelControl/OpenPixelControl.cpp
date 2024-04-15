@@ -3,6 +3,7 @@
 #include <Util.h>
 #include <Display.h>
 #include <LED.h>
+#include <Logger.h>
 
 using namespace qindesign::network;
 
@@ -35,7 +36,7 @@ namespace OpenPixelControl {
 
         server.begin();
         status = ready;
-
+        Logger.println("Open Pixel Control ready");
     }
 
     // ixHeader is the index we are at in the current OPC message header
@@ -69,7 +70,7 @@ namespace OpenPixelControl {
             client = server.available();
             if (client) {
 
-                dbgprintf("Client connected\n");
+                Logger.println("Client connected");
                 Display::status(3, "OpenPixel Connected");
                 LED::openPixelClientConnection(true);
                 status = connected;
@@ -86,7 +87,7 @@ namespace OpenPixelControl {
             {
                 // client has disconnected!
                 client.stop();
-                dbgprintf("client disconnected\n");
+                Logger.println("client disconnected");
                 Display::status(3, "");
                 LED::openPixelClientConnection(false);
                 status = ready;
@@ -123,7 +124,7 @@ namespace OpenPixelControl {
                 return; 
 
             if (ixHeader > 4)
-                dbgprintf("Alert! Read past end of header -- this should never happen\n");
+                Logger.print("Alert! Read past end of header -- this should never happen\n");
 
             if (ixHeader == 4) 
             {
@@ -141,14 +142,14 @@ namespace OpenPixelControl {
 
                 if (command != 0)
                 {
-                    dbgprintf("OpenPixelControl - command %d not supported\n", command);
+                    Logger.printf("OpenPixelControl - command %d not supported\n", command);
                     sprintf(rgchError, "OPC BAD CMD %d", command);
                     Display::status(3, rgchError);
                     bThrowAwayMessage = true;
                 }
                 else if (channel < 1 || channel > 8)
                 {
-                    dbgprintf("OpenPixelControl - channel %d not supported\n", channel);
+                    Logger.printf("OpenPixelControl - channel %d not supported\n", channel);
                     sprintf(rgchError, "OPC BAD CHAN %d", channel);
                     Display::status(3, rgchError);
                     channel = 1;
@@ -156,7 +157,7 @@ namespace OpenPixelControl {
                 }
                 else if (cbMessage > (3 * LEDS_PER_STRIP))
                 {
-                    dbgprintf("OpenPixelControl - too many pixels per strip (%d)\n", cbMessage / 3);
+                    Logger.printf("OpenPixelControl - too many pixels per strip (%d)\n", cbMessage / 3);
                     Display::status(3, "OPC TOO MANY PIXELS");
                     bThrowAwayMessage = true;
                 }
@@ -178,7 +179,7 @@ namespace OpenPixelControl {
 
         if (ixHeader != 4)
         {
-            dbgprintf("Alert! impossible header value\n");
+            Logger.println("Alert! impossible header value");
         }
 
        

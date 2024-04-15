@@ -9,6 +9,8 @@
 #include <OpenPixelControl.h>
 #include <WebServer.h>
 #include <Ota.h>
+#include <Mqtt.h>
+#include <Logger.h>
 
 using namespace qindesign::network;
 
@@ -32,18 +34,18 @@ namespace TcpServer
 
         uint8_t mac[6];
         Ethernet.macAddress(mac); // This is informative; it retrieves, not sets
-        dbgprintf("MAC = %02x:%02x:%02x:%02x:%02x:%02x\r\n",
+        Logger.printf("MAC = %02x:%02x:%02x:%02x:%02x:%02x\r\n",
                   mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
         // Listen for link changes
         Ethernet.onLinkState([](bool state)
                              {
             if (state) {
-            dbgprintf("[Ethernet] Link ON, %d Mbps, %s duplex\r\n",
+            Logger.printf("[Ethernet] Link ON, %d Mbps, %s duplex\r\n",
                     Ethernet.linkSpeed(),
                     Ethernet.linkIsFullDuplex() ? "Full" : "Half");
             } else {
-            dbgprintf("[Ethernet] Link OFF\r\n");
+            Logger.println("[Ethernet] Link OFF\r\n");
             }
             networkChanged(Ethernet.localIP() != INADDR_NONE, state); });
 
@@ -57,7 +59,7 @@ namespace TcpServer
             IPAddress gw = Ethernet.gatewayIP();
             IPAddress dns = Ethernet.dnsServerIP();
 
-            dbgprintf("[Ethernet] Address changed:\r\n"
+            Logger.printf("[Ethernet] Address changed:\r\n"
                     "    Local IP = %u.%u.%u.%u\r\n"
                     "    Subnet   = %u.%u.%u.%u\r\n"
                     "    Gateway  = %u.%u.%u.%u\r\n"
@@ -67,7 +69,7 @@ namespace TcpServer
                     gw[0], gw[1], gw[2], gw[3],
                     dns[0], dns[1], dns[2], dns[3]);
             } else {
-            dbgprintf("[Ethernet] Address changed: No IP address\r\n");
+            Logger.println("[Ethernet] Address changed: No IP address");
             }
 
             // Tell interested parties the network state, for example, servers,
@@ -75,10 +77,10 @@ namespace TcpServer
             // to stop/start/restart/etc
             networkChanged(hasIP, Ethernet.linkState()); });
 
-        dbgprintf("Starting Ethernet with DHCP...\r\n");
+        Logger.println("Starting Ethernet with DHCP...");
         if (!Ethernet.begin())
         {
-            dbgprintf("Failed to start Ethernet\r\n");
+            Logger.println("Failed to start Ethernet");
             return;
         }
     }
@@ -94,10 +96,11 @@ namespace TcpServer
         // Start the server and keep it up
         if (status != ready)
         {
-            dbgprintf("Starting OPC and web servers\n");
+            Logger.println("Starting OPC and web servers");
             OpenPixelControl::setup();
             WebServer::setup();
             Ota::setup();
+            Mqtt::setup();
             status = ready;
         }
     }
@@ -110,6 +113,8 @@ namespace TcpServer
 
         OpenPixelControl::loop();
         WebServer::loop();
+        Ota::loop();
+        Mqtt::loop();
 
         Ethernet.maintain();
     }

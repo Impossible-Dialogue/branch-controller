@@ -15,6 +15,28 @@
 
 #include <stdint.h>     // uint32_t, etc.
 
+/* --------------------------------------------------------------------------------------------
+ * USE_RAM_FOR_FLASHING def
+ *
+ * Size in KB to store the firmware in memory, if defined, otherwise it will be stored in flash.
+ * Once firmware is stored in either flash or memory, it will ultimately end up in a certain
+ * address in flash and the device will reboot.
+ *
+ * When building your program, something like this is printed to the output:
+ *
+ * Memory Usage on Teensy 4.1:
+ * FLASH: code:171304, data:51148, headers:8968   free for files:7895044
+ * RAM1: variables:55136, code:167976, padding:28632   free for local variables:272544
+ * RAM2: variables:79616  free for malloc/new:444672
+ *
+ * The number after "free for malloc/new:" is the available RAM usage before your program runs.
+ * You shouldn't request anything more than this. Remember, 1 KB is 1,024 bytes.
+ *
+ * Default is to store in flash. Uncomment USE_RAM_FOR_FLASHING to store in RAM.
+ *
+ */
+// #define USE_RAM_FOR_FLASHING 275
+
 #if defined(__MKL26Z64__)
   #define FLASH_ID		"fw_teensyLC"		// target ID (in code)
   #define FLASH_SIZE		(0x10000)		// 64KB program flash
@@ -58,12 +80,13 @@
   #define FLASH_RESERVE		(4*FLASH_SECTOR_SIZE)	// reserve top of flash
   #define FLASH_BASE_ADDR	(0x60000000)		// code starts here
 #elif defined(__IMXRT1062__) && defined(ARDUINO_TEENSY41)
-  #define FLASH_ID		"fw_teensy41"		// target ID (in code)
-  #define FLASH_SIZE		(0x800000)		// 8MB
-  #define FLASH_SECTOR_SIZE	(0x1000)		// 4KB sector size
-  #define FLASH_WRITE_SIZE	(4)			// 4-byte/32-bit writes    
-  #define FLASH_RESERVE		(4*FLASH_SECTOR_SIZE)	// reserve top of flash 
-  #define FLASH_BASE_ADDR	(0x60000000)		// code starts here
+  #define FLASH_ID          "fw_teensy41"  // target ID (in code)
+  #define FLASH_ID_LEN      (11)           // target ID (in code)
+  #define FLASH_SIZE        (0x800000)     // 8MB
+  #define FLASH_SECTOR_SIZE (0x1000)       // 4KB sector size
+  #define FLASH_WRITE_SIZE  (4)            // 4-byte/32-bit writes
+  #define FLASH_RESERVE     (64*FLASH_SECTOR_SIZE) // reserve top of flash
+  #define FLASH_BASE_ADDR   (0x60000000)   // code starts here
 #elif defined(__IMXRT1062__) && defined(ARDUINO_TEENSY_MICROMOD)
   #define FLASH_ID		"fw_teensyMM"		// target ID (in code)
   #define FLASH_SIZE		(0x1000000)		// 16MB
@@ -76,8 +99,12 @@
 #endif
 
 #if defined(FLASH_ID)
-  #define RAM_BUFFER_SIZE	(0 * 1024)
-  #define IN_FLASH(a) ((a) >= FLASH_BASE_ADDR && (a) < FLASH_BASE_ADDR+FLASH_SIZE)
+  #ifdef USE_RAM_FOR_FLASHING
+    #define RAM_BUFFER_SIZE ((USE_RAM_FOR_FLASHING) * 1024)
+  #else
+    #define RAM_BUFFER_SIZE (0*1024)
+  #endif
+#define IN_FLASH(a) ((a) >= FLASH_BASE_ADDR && (a) < FLASH_BASE_ADDR + FLASH_SIZE)
 #endif
 
 // reboot is the same for all ARM devices
@@ -117,10 +144,10 @@ void LMEM_CodeCacheClearAll(void);
 RAMFUNC int flash_sector_not_erased( uint32_t address );
 
 // from cores\Teensy4\eeprom.c  --  use these functions at your own risk!!!
-extern "C" void eepromemu_flash_write(void *addr, const void *data, uint32_t len);
-extern "C" void eepromemu_flash_erase_sector(void *addr);
-extern "C" void eepromemu_flash_erase_32K_block(void *addr);
-extern "C" void eepromemu_flash_erase_64K_block(void *addr);
+void eepromemu_flash_write(void *addr, const void *data, uint32_t len);
+void eepromemu_flash_erase_sector(void *addr);
+void eepromemu_flash_erase_32K_block(void *addr);
+void eepromemu_flash_erase_64K_block(void *addr);
 
 #endif // __IMXRT1062__
 
