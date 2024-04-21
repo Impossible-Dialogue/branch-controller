@@ -13,8 +13,8 @@ namespace Imu
     Adafruit_BNO055 bno = Adafruit_BNO055(55);
     Mqtt::RateLimitedMqttPublisher<uint32_t> timestamp_publisher("orientation/timestamp");
     Mqtt::RateLimitedMqttPublisher<float> orientation_x_publisher("orientation/x");
-    Mqtt::RateLimitedMqttPublisher<float> orientation_y_publisher("orientation/x");
-    Mqtt::RateLimitedMqttPublisher<float> orientation_z_publisher("orientation/x");
+    Mqtt::RateLimitedMqttPublisher<float> orientation_y_publisher("orientation/y");
+    Mqtt::RateLimitedMqttPublisher<float> orientation_z_publisher("orientation/z");
     Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_sys_publisher("calibration/sys");
     Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_gyro_publisher("calibration/gyro");
     Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_accel_publisher("calibration/accel");
