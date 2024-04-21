@@ -11,6 +11,14 @@
 namespace Imu
 {
     Adafruit_BNO055 bno = Adafruit_BNO055(55);
+    Mqtt::RateLimitedMqttPublisher<uint32_t> timestamp_publisher("orientation/timestamp");
+    Mqtt::RateLimitedMqttPublisher<float> orientation_x_publisher("orientation/x");
+    Mqtt::RateLimitedMqttPublisher<float> orientation_y_publisher("orientation/x");
+    Mqtt::RateLimitedMqttPublisher<float> orientation_z_publisher("orientation/x");
+    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_sys_publisher("calibration/sys");
+    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_gyro_publisher("calibration/gyro");
+    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_accel_publisher("calibration/accel");
+    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_mag_publisher("calibration/mag");
 
     void setup()
     {
@@ -32,19 +40,20 @@ namespace Imu
         /* Get a Euler angle sample for orientation */
         imu::Vector<3> orientation;
         bool success = bno.getVector(Adafruit_BNO055::VECTOR_EULER, &orientation);
-        if (success) {
-            Mqtt::maybePublish("orientation/timestamp", millis());
-            Mqtt::maybePublish("orientation/x", orientation.x());
-            Mqtt::maybePublish("orientation/y", orientation.y());
-            Mqtt::maybePublish("orientation/z", orientation.z());
+        if (success)
+        {
+            timestamp_publisher.maybePublish(millis());
+            orientation_x_publisher.maybePublish(orientation.x());
+            orientation_z_publisher.maybePublish(orientation.y());
+            orientation_z_publisher.maybePublish(orientation.z());
         }
-        
+
         uint8_t sys, gyro, accel, mag = 0;
         bno.getCalibration(&sys, &gyro, &accel, &mag);
-        Mqtt::maybePublish("calibration/sys", sys);
-        Mqtt::maybePublish("calibration/gyro", gyro);
-        Mqtt::maybePublish("calibration/accel", accel);
-        Mqtt::maybePublish("calibration/mag", mag);
+        calibration_sys_publisher.maybePublish(sys);
+        calibration_gyro_publisher.maybePublish(gyro);
+        calibration_accel_publisher.maybePublish(accel);
+        calibration_mag_publisher.maybePublish(mag);
     }
 
 }
