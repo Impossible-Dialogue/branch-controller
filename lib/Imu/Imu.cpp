@@ -6,19 +6,18 @@
 #include <utility/imumaths.h>
 
 #include <Logger.h>
-#include <Mqtt.h>
 
 namespace Imu
 {
     Adafruit_BNO055 bno = Adafruit_BNO055(55);
-    Mqtt::RateLimitedMqttPublisher<uint32_t> timestamp_publisher("orientation/timestamp");
-    Mqtt::RateLimitedMqttPublisher<float> orientation_x_publisher("orientation/x");
-    Mqtt::RateLimitedMqttPublisher<float> orientation_y_publisher("orientation/y");
-    Mqtt::RateLimitedMqttPublisher<float> orientation_z_publisher("orientation/z");
-    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_sys_publisher("calibration/sys");
-    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_gyro_publisher("calibration/gyro");
-    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_accel_publisher("calibration/accel");
-    Mqtt::RateLimitedMqttPublisher<uint8_t> calibration_mag_publisher("calibration/mag");
+    uint32_t timestamp = 0;
+    float orientation_x = 0.0;
+    float orientation_y = 0.0;
+    float orientation_z = 0.0;
+    uint8_t calibration_sys = 0;
+    uint8_t calibration_gyro = 0;
+    uint8_t calibration_accel = 0;
+    uint8_t calibration_mag = 0;
 
     void setup()
     {
@@ -33,6 +32,15 @@ namespace Imu
         delay(1000);
 
         bno.setExtCrystalUse(true);
+
+        timestamp = 0;
+        orientation_x = 0.0;
+        orientation_y = 0.0;
+        orientation_z = 0.0;
+        calibration_sys = 0;
+        calibration_gyro = 0;
+        calibration_accel = 0;
+        calibration_mag = 0;
     }
 
     void loop()
@@ -42,18 +50,12 @@ namespace Imu
         bool success = bno.getVector(Adafruit_BNO055::VECTOR_EULER, &orientation);
         if (success)
         {
-            timestamp_publisher.maybePublish(millis());
-            orientation_x_publisher.maybePublish(orientation.x());
-            orientation_z_publisher.maybePublish(orientation.y());
-            orientation_z_publisher.maybePublish(orientation.z());
+            timestamp = millis();
+            orientation_x = orientation.x();
+            orientation_y = orientation.y();
+            orientation_z = orientation.z();
         }
-
-        uint8_t sys, gyro, accel, mag = 0;
-        bno.getCalibration(&sys, &gyro, &accel, &mag);
-        calibration_sys_publisher.maybePublish(sys);
-        calibration_gyro_publisher.maybePublish(gyro);
-        calibration_accel_publisher.maybePublish(accel);
-        calibration_mag_publisher.maybePublish(mag);
+        bno.getCalibration(&calibration_sys, &calibration_gyro, &calibration_accel, &calibration_mag);
     }
 
 }

@@ -11,6 +11,10 @@
 #include <Ota.h>
 #include <Mqtt.h>
 #include <Logger.h>
+#include <WebSocket.h>
+
+// Include Teensy41_AsyncTCP.h to link implementation of AsyncTCP
+#include "Teensy41_AsyncTCP.h"
 
 using namespace qindesign::network;
 
@@ -47,13 +51,13 @@ namespace TcpServer
             } else {
             Logger.println("[Ethernet] Link OFF\r\n");
             }
-            networkChanged(Ethernet.localIP() != INADDR_NONE, state); });
+            networkChanged(Ethernet.localIP() != IPAddress((uint32_t)0), state); });
 
         // Listen for address changes
         Ethernet.onAddressChanged([]()
                                   {
             IPAddress ip = Ethernet.localIP();
-            bool hasIP = (ip != INADDR_NONE);
+            bool hasIP = (ip != IPAddress((uint32_t)0));
             if (hasIP) {
             IPAddress subnet = Ethernet.subnetMask();
             IPAddress gw = Ethernet.gatewayIP();
@@ -101,6 +105,7 @@ namespace TcpServer
             WebServer::setup();
             Ota::setup();
             Mqtt::setup();
+            WebSocket::setup();
             status = ready;
         }
     }
@@ -115,6 +120,7 @@ namespace TcpServer
         WebServer::loop();
         Ota::loop();
         Mqtt::loop();
+        WebSocket::loop();
 
         Ethernet.maintain();
     }

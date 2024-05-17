@@ -117,4 +117,4 @@ size_t MqttLogger::write(uint8_t character)
     return 1;
 }
 
-MqttLogger Logger("log", MqttLoggerMode::MqttAndSerial);
+MqttLogger Logger("log", MqttLoggerMode::SerialOnly);

@@ -4,7 +4,7 @@
 #error Only Teensy 4.1 supported
 #endif
 
-#include <AsyncWebServer_Teensy41.h>
+#include <AsyncWebServer_Teensy41.hpp>
 #include <QNEthernet.h>
 #include <Util.h>
 #include <Logger.h>
