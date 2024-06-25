@@ -6,6 +6,7 @@
 #include <utility/imumaths.h>
 
 #include <Logger.h>
+#include <Persist.h>
 
 namespace Imu
 {
@@ -14,6 +15,7 @@ namespace Imu
     float orientation_x = 0.0;
     float orientation_y = 0.0;
     float orientation_z = 0.0;
+    float head_orientation = 0.0;
     uint8_t calibration_sys = 0;
     uint8_t calibration_gyro = 0;
     uint8_t calibration_accel = 0;
@@ -37,6 +39,7 @@ namespace Imu
         orientation_x = 0.0;
         orientation_y = 0.0;
         orientation_z = 0.0;
+        head_orientation = 0.0;
         calibration_sys = 0;
         calibration_gyro = 0;
         calibration_accel = 0;
@@ -54,6 +57,13 @@ namespace Imu
             orientation_x = orientation.x();
             orientation_y = orientation.y();
             orientation_z = orientation.z();
+            head_orientation = 360.0 - orientation_x - Persist::data.center_orientation;
+            if (head_orientation > 180.0) {
+                head_orientation = head_orientation - 360.0;
+            }
+            if (head_orientation < -180.0) {
+                head_orientation = head_orientation + 360.0;
+            }
         }
         bno.getCalibration(&calibration_sys, &calibration_gyro, &calibration_accel, &calibration_mag);
     }

@@ -137,6 +137,8 @@ namespace WebServer {
                     LED::setSolidColor(WHITE);
                     return;
                 }
+                else if (!strncmp(pszTok, "c=", 2))
+                    Persist::data.center_orientation = atof(pszTok + 2);
                 else if (!strncmp(pszTok, "w=", 2))
                     Persist::data.max_power = atoi(pszTok + 2);
                 else if (!strncmp(pszTok, "o=", 2))
@@ -178,6 +180,13 @@ namespace WebServer {
                 "<p>built " __DATE__ " " __TIME__ "</p>"
                 "<hr>"
                 "<form action=/>"
+                    "Center orientation: "
+                    "<input name=c value='"
+
+                        ); client.println(Persist::data.center_orientation); client.println(
+                    
+                    "'> degrees"
+                    "<br>"
                     "Maximum Power: "
                     "<input name=w value='"
 

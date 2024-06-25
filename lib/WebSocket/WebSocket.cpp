@@ -67,6 +67,10 @@ namespace WebSocket
         {
             client.send(String(Imu::orientation_z).c_str());
         }
+        else if (data == "imu/head_orientation")
+        {
+            client.send(String(Imu::head_orientation).c_str());
+        }
         else if (data == "imu/calibration_sys")
         {
             client.send(String(Imu::calibration_sys).c_str());
@@ -86,6 +90,9 @@ namespace WebSocket
         else if (data == "imu/timestamp")
         {
             client.send(String(Imu::timestamp).c_str());
+        }
+        else {
+            Serial.printf("Unknown WebSocket request: %s/n", data);
         }
     }
 

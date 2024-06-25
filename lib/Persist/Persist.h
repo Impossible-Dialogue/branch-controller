@@ -30,6 +30,7 @@ namespace Persist {
 
         bool        static_ip;          // false (default) = use DHCP. true = IP address in following field
         byte        ip_addr[4];         // IP address for static IP
+        float       center_orientation; // To calibrate the orientation of head facing towards the center
 
     };
 

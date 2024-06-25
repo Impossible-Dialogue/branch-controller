@@ -17,6 +17,7 @@ namespace Imu
     extern float orientation_x;
     extern float orientation_y;
     extern float orientation_z;
+    extern float head_orientation;
     extern uint8_t calibration_sys;
     extern uint8_t calibration_gyro;
     extern uint8_t calibration_accel;
