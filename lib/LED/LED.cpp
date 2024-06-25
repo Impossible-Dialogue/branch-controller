@@ -18,7 +18,7 @@ namespace LED {
     DMAMEM int displayMemory[LEDS_PER_STRIP * NUM_STRIPS * bytesPerLED / 4];
     int drawingMemory[LEDS_PER_STRIP * NUM_STRIPS * bytesPerLED / 4];
 
-    const int config = WS2811_GRB | WS2811_800kHz;
+    const int config = WS2811_RGB | WS2811_800kHz;
 
     OctoWS2811 leds(LEDS_PER_STRIP, displayMemory, drawingMemory, config, NUM_STRIPS, pinList);
 
