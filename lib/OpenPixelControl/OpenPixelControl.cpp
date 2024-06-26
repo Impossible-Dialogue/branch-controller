@@ -70,8 +70,7 @@ namespace OpenPixelControl {
             client = server.available();
             if (client) {
 
-                Logger.println("Client connected");
-                Display::status(3, "OpenPixel Connected");
+                Logger.println("OPC client connected");
                 LED::openPixelClientConnection(true);
                 status = connected;
                 ixHighestChannelSeen = 0;
@@ -87,7 +86,7 @@ namespace OpenPixelControl {
             {
                 // client has disconnected!
                 client.stop();
-                Logger.println("client disconnected");
+                Logger.println("OPC client disconnected");
                 Display::status(3, "");
                 LED::openPixelClientConnection(false);
                 status = ready;
