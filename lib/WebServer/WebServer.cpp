@@ -1,245 +1,124 @@
 #include <Arduino.h>
 #include <WebServer.h>
-#include <QNEthernet.h>
 #include <Persist.h>
 #include <LED.h>
 #include <Logger.h>
+#include <Imu.h>
 
+#include <QNEthernet.h>
 using namespace qindesign::network;
 
-char *strsep(char **stringp, const char *delim);
+#include <AsyncWebServer_Teensy41.hpp>
 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 1000
 
-namespace WebServer {
+namespace WebServer
+{
+    AsyncWebServer server(80);
 
-    enum Status { ready,            // Listening, ready for a client to connect
-                  connected         // A client has connected
-                };
+    void notFound(AsyncWebServerRequest *request)
+    {
+        request->send(404, "text/plain", "Not found");
+    }
 
-    Status status;
-    EthernetClient client;
-    EthernetServer server(80);
+    void handleForm(AsyncWebServerRequest *request)
+    {
+        for (uint8_t i = 0; i < request->args(); i++)
+        {
+            if (request->argName(i) == "c")
+                Persist::data.center_orientation = request->arg(i).toFloat();
+            if (request->argName(i) == "s")
+                Persist::data.static_ip = (request->arg(i).toInt() == 1);
+            if (request->argName(i) == "i0")
+                Persist::data.ip_addr[0] = request->arg(i).toInt();
+            if (request->argName(i) == "i1")
+                Persist::data.ip_addr[1] = request->arg(i).toInt();
+            if (request->argName(i) == "i2")
+                Persist::data.ip_addr[2] = request->arg(i).toInt();
+            if (request->argName(i) == "i3")
+                Persist::data.ip_addr[3] = request->arg(i).toInt();
+        }
+        Persist::write();
+        LED::load_persistant_data();
+    }
 
-    char rgchRequest[BUFFER_SIZE + 1];
-    uint16_t ixRequest = 0;
-
-    void setup() 
+    void handleRoot(AsyncWebServerRequest *request)
     {
 
+        char temp[BUFFER_SIZE];
+
+        snprintf(temp, BUFFER_SIZE - 1,
+                 "HTTP/1.1 200 OK\r\n"
+                 "Content-Type: text/html\r\n"
+                 "Connection: close\r\n"
+                 "\r\n"
+                 "<!DOCTYPE HTML>"
+                 "<html>"
+                 "<h1>Branch Controller</h1>"
+                 "<p>built " __DATE__ " " __TIME__ "</p>"
+                 "<hr>"
+                 "<form method='post' action=/>"
+                 "Center orientation: "
+                 "<input name=c value='%f'> degrees"
+                 "<br>"
+                 "<input type=checkbox id=s name=s value=1 %s><label for=s>Static IP Address: </label> "
+                 "<input name=i0 size=3 value=%d>."
+                 "<input name=i1 size=3 value=%d>."
+                 "<input name=i2 size=3 value=%d>."
+                 "<input name=i3 size=3 value=%d>"
+                 "<br / >"
+                 "<input type=submit>"
+                 "<br>"
+                 "Test colors: "
+                 "<a href=/r>Red</a> "
+                 "<a href=/g>Green</a> "
+                 "<a href=/b>Blue</a> "
+                 "<a href=/w>White</a> "
+                 "</form>"
+                 "</html>",
+                 Persist::data.center_orientation,
+                 Persist::data.static_ip ? "checked" : "",
+                 Persist::data.ip_addr[0],
+                 Persist::data.ip_addr[1],
+                 Persist::data.ip_addr[2],
+                 Persist::data.ip_addr[3]);
+
+        request->send(200, "text/html", temp);
+    }
+
+    void setup()
+    {
         server.begin();
-        status = ready;
+        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { handleRoot(request); 
+                        request->redirect("/"); });
+        server.on("/", HTTP_POST, [](AsyncWebServerRequest *request)
+                  {
+                      handleForm(request);
+                      // request->redirect("/");
+                  });
+        server.on("/r", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { LED::setSolidColor(RED); 
+                        request->redirect("/"); });
+        server.on("/g", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { LED::setSolidColor(GREEN); 
+                        request->redirect("/"); });
+        server.on("/b", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { LED::setSolidColor(BLUE); 
+                        request->redirect("/"); });
+        server.on("/w", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { LED::setSolidColor(WHITE); 
+                        request->redirect("/"); });
+
+        server.on("/head_orientation", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { request->send(200, "text/plain", String(Imu::head_orientation)); });
+
+        server.onNotFound(notFound);
+        server.begin();
         Logger.println("Webserver ready");
     }
 
-    void loop() {
-
-        if (status == ready)
-        {
-
-            client = server.available();
-            if (client)
-            {
-                Logger.printf("Web client connected\n");
-                ixRequest = 0;
-                status = connected;
-            }
-        }
-
-        if (status == connected)
-        {
-            if (!client.connected())
-            {
-                Logger.printf("Web client disconnected\n");
-                status = ready;
-                return;
-            }
-
-            // client is still connected -- read the bytes!
-            read_available();
-        }
-    }
-
-    void read_available() {
-
-        // Here's the plan: read one line at a time - up to BUFFER_SIZE bytes, then discard
-        // When you see \n, process it
-        //      if it starts with GET, record this as the "GET" command
-        //      if it starts with \n again, that's the end of the HTTP header - process it
-        //      otherwise discard and start over
-        
-        while (client.available())
-        {
-            char c = client.read();
-
-            if (c == '\n')
-            {
-                rgchRequest[ixRequest] = '\0';
-                if (!strncmp(rgchRequest, "GET ", 4))
-                {
-                    // GET command has a space in it followed by something like HTTP/1.1 which we can
-                    // throw away
-                    if (char *pchSpace = strchr(rgchRequest+4, ' '))
-                        *pchSpace = '\0';
-                    process_get(rgchRequest + 4);
-                }
-                if (ixRequest == 0)
-                {
-                    output_html();
-
-                    delay(1);
-                    client.stop();
-                }
-                ixRequest = 0;
-            }
-            else
-            {
-                if (ixRequest == BUFFER_SIZE - 1)
-                    rgchRequest[ixRequest] = '\0';
-                else if (c != '\r')
-                {
-                    rgchRequest[ixRequest] = c;
-                    ixRequest++;
-                }
-            }
-        }
-    }
-
-    void process_get(char* szGet)
+    void loop()
     {
-        Logger.printf("GET: [%s]\n", szGet);
-
-        if (!strcmp("/", szGet))
-            return;
-
-        char *pszTok = NULL;
-        while (NULL != (pszTok = strsep(&szGet,"/?&")))
-        {
-            if (*pszTok)
-            {
-                if (!strcmp(pszTok, "r"))
-                {
-                    LED::setSolidColor(RED);
-                    return;
-                }
-                else if (!strcmp(pszTok, "g"))
-                {
-                    LED::setSolidColor(GREEN);
-                    return;
-                }
-                else if (!strcmp(pszTok, "b"))
-                {
-                    LED::setSolidColor(BLUE);
-                    return;
-                }
-                else if (!strcmp(pszTok, "w"))
-                {
-                    LED::setSolidColor(WHITE);
-                    return;
-                }
-                else if (!strncmp(pszTok, "c=", 2))
-                    Persist::data.center_orientation = atof(pszTok + 2);
-                else if (!strncmp(pszTok, "w=", 2))
-                    Persist::data.max_power = atoi(pszTok + 2);
-                else if (!strncmp(pszTok, "o=", 2))
-                    Persist::data.first_color = pszTok[2];
-                else if (!strncmp(pszTok, "s=", 2))
-                    Persist::data.static_ip = (pszTok[2] == '1');
-
-                else if (!strncmp(pszTok, "i0=", 3))
-                    Persist::data.ip_addr[0] = (uint8_t) atoi(pszTok + 3);
-                else if (!strncmp(pszTok, "i1=", 3))
-                    Persist::data.ip_addr[1] = (uint8_t) atoi(pszTok + 3);
-                else if (!strncmp(pszTok, "i2=", 3))
-                    Persist::data.ip_addr[2] = (uint8_t) atoi(pszTok + 3);
-                else if (!strncmp(pszTok, "i3=", 3))
-                    Persist::data.ip_addr[3] = (uint8_t) atoi(pszTok + 3);
-
-
-
-                else
-                    Logger.printf("unidentified token: {%s}\n", pszTok);
-            }
-        }
-
-        Persist::write();
-        LED::load_persistant_data();
-
-    }
-
-    void output_html()
-    {
-        client.println(
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/html\r\n"
-            "Connection: close\r\n"
-            "\r\n"
-            "<!DOCTYPE HTML>"
-            "<html>"
-                "<h1>Branch Controller</h1>" 
-                "<p>built " __DATE__ " " __TIME__ "</p>"
-                "<hr>"
-                "<form action=/>"
-                    "Center orientation: "
-                    "<input name=c value='"
-
-                        ); client.println(Persist::data.center_orientation); client.println(
-                    
-                    "'> degrees"
-                    "<br>"
-                    "Maximum Power: "
-                    "<input name=w value='"
-
-                        ); client.println(Persist::data.max_power); client.println(
-                    
-                    "'> milliwatts"
-                    "<br>"
-                    "RGB/GRB Order: "
-                    "<select name=o>"
-                        "<option value=r"
-                        
-                            ); if (Persist::data.first_color == 'r') client.println(" selected"); client.println(
-
-                        ">RGB</option>"
-                        "<option value=g"
-                        
-                            ); if (Persist::data.first_color == 'g') client.println(" selected"); client.println(
-
-                        ">GRB</option>"
-                    "</select>"
-                    "<br>"
-                    "<input type=checkbox id=s name=s value=1 "
-                    
-                            ); if (Persist::data.static_ip) client.println("checked"); client.println(
-                    
-                    "><label for=s>Static IP Address: </label> "
-                    "<input name=i0 size=3 value="
-
-                            ); client.println(Persist::data.ip_addr[0]); client.println(
-
-                    ">.<input name=i1 size=3 value="
-
-                            ); client.println(Persist::data.ip_addr[1]); client.println(
-
-                    ">.<input name=i2 size=3 value="
-
-                            ); client.println(Persist::data.ip_addr[2]); client.println(
-
-                    ">.<input name=i3 size=3 value="
-
-                            ); client.println(Persist::data.ip_addr[3]); client.println(
-
-                    "><br / >" 
-
-                    "<input type=submit>"
-                    "<br>"
-                    "Test colors: "
-                    "<a href=/r>Red</a> "
-                    "<a href=/g>Green</a> "
-                    "<a href=/b>Blue</a> "
-                    "<a href=/w>White</a> "
-                "</form>"
-            "</html>");
     }
 }
-
