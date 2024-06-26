@@ -92,7 +92,9 @@ namespace WebSocket
             client.send(String(Imu::timestamp).c_str());
         }
         else {
-            Serial.printf("Unknown WebSocket request: %s/n", data);
+            Serial.printf("Unknown WebSocket request: ");
+            Serial.println(data);
+            client.send(String("error"));
         }
     }
 
