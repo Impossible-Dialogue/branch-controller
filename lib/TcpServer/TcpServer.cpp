@@ -103,8 +103,8 @@ namespace TcpServer
             Logger.println("Starting OPC and web servers");
             OpenPixelControl::setup();
             WebServer::setup();
-            Ota::setup();
-            Mqtt::setup();
+            // Ota::setup();
+            // Mqtt::setup();
             WebSocket::setup();
             status = ready;
         }
@@ -118,8 +118,8 @@ namespace TcpServer
 
         OpenPixelControl::loop();
         WebServer::loop();
-        Ota::loop();
-        Mqtt::loop();
+        // Ota::loop();
+        // Mqtt::loop();
         WebSocket::loop();
 
         Ethernet.maintain();
