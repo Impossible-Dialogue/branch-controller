@@ -16,14 +16,19 @@ namespace Persist
         data.cb = sizeof(data);
         data.rgbSolidColor = BLACK;
         data.pattern = (uint8_t)1; // LED::patternTest
-        data.brightness = BRIGHTNESS;
-        data.max_power = 1000000; // mw
-        data.first_color = 'r';
-        data.static_ip = false;
-        data.ip_addr[0] = 192;
-        data.ip_addr[1] = 168;
-        data.ip_addr[2] = 1;
-        data.ip_addr[3] = 128;
+        data.static_ip = true;
+        data.ip_addr[0] = 10;
+        data.ip_addr[1] = 10;
+        data.ip_addr[2] = 3;
+        data.ip_addr[3] = 10;
+        data.mask[0] = 255;
+        data.mask[1] = 255;
+        data.mask[2] = 255;
+        data.mask[3] = 0;
+        data.gateway[0] = 10;
+        data.gateway[1] = 10;
+        data.gateway[2] = 3;
+        data.gateway[3] = 1;
         data.center_orientation = 0;
 
         Logger.printf("Initializing Persisted Data\n");
@@ -70,20 +75,25 @@ namespace Persist
             write();
         }
 
-        Logger.printf("cb: %d color: %x pattern: %d  brightness: %d\n"
-                      "       max_power: %d  first_color: %c \n"
-                      "       static ip: %d  ip addr: %d.%d.%d.%d\n",
+        Logger.printf("cb: %d color: %x pattern: %d \n"
+                      "       static ip: %d  ip addr: %d.%d.%d.%d\n"
+                      "       mask: %d.%d.%d.%d gateway: %d.%d.%d.%d\n",
                       data.cb,
                       data.rgbSolidColor,
                       data.pattern,
-                      data.brightness,
-                      data.max_power,
-                      data.first_color,
                       data.static_ip,
                       data.ip_addr[0],
                       data.ip_addr[1],
                       data.ip_addr[2],
-                      data.ip_addr[3]);
+                      data.ip_addr[3],
+                      data.mask[0],
+                      data.mask[1],
+                      data.mask[2],
+                      data.mask[3],
+                      data.gateway[0],
+                      data.gateway[1],
+                      data.gateway[2],
+                      data.gateway[3]);
     }
 
     void write()

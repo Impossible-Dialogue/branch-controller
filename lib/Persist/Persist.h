@@ -23,15 +23,12 @@ namespace Persist {
 
         int         rgbSolidColor;      // current color to display 
         uint8_t     pattern;            // whether we are in solid color mode (0) or test pattern (1) -- maps to enum Pattern in LED.cpp
-        uint8_t     brightness;         // global brightness for fastled
-
-        uint32_t    max_power;          // in milliwatts
-        char        first_color;        // 'r' or 'g' will work
 
         bool        static_ip;          // false (default) = use DHCP. true = IP address in following field
         byte        ip_addr[4];         // IP address for static IP
+        byte        mask[4];         // IP address for static IP
+        byte        gateway[4];         // IP address for static IP
         float       center_orientation; // To calibrate the orientation of head facing towards the center
-
     };
 
     extern persistence_t data;

@@ -39,7 +39,7 @@ namespace TcpServer
         uint8_t mac[6];
         Ethernet.macAddress(mac); // This is informative; it retrieves, not sets
         Logger.printf("MAC = %02x:%02x:%02x:%02x:%02x:%02x\r\n",
-                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+                      mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
         // Listen for link changes
         Ethernet.onLinkState([](bool state)
@@ -81,11 +81,35 @@ namespace TcpServer
             // to stop/start/restart/etc
             networkChanged(hasIP, Ethernet.linkState()); });
 
-        Logger.println("Starting Ethernet with DHCP...");
-        if (!Ethernet.begin())
+        if (Persist::data.static_ip)
         {
-            Logger.println("Failed to start Ethernet");
-            return;
+            IPAddress ip(Persist::data.ip_addr[0],
+                         Persist::data.ip_addr[1],
+                         Persist::data.ip_addr[2],
+                         Persist::data.ip_addr[3]);
+            IPAddress mask(Persist::data.mask[0],
+                           Persist::data.mask[1],
+                           Persist::data.mask[2],
+                           Persist::data.mask[3]);
+            IPAddress gateway(Persist::data.gateway[0],
+                              Persist::data.gateway[1],
+                              Persist::data.gateway[2],
+                              Persist::data.gateway[3]);
+            Logger.println("Starting Ethernet with static IP address...");
+            if (!Ethernet.begin(ip, mask, gateway))
+            {
+                Logger.println("Failed to start Ethernet");
+                return;
+            }
+        }
+        else
+        {
+            Logger.println("Starting Ethernet with DHCP...");
+            if (!Ethernet.begin())
+            {
+                Logger.println("Failed to start Ethernet");
+                return;
+            }
         }
     }
 
