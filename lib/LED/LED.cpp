@@ -95,7 +95,6 @@ namespace LED {
     void load_persistant_data() {
         pattern = (enum Pattern) Persist::data.pattern;
         rgbSolidColor = Persist::data.rgbSolidColor;
-        Logger.printf("Color order is %c\n", Persist::data.first_color);
     }
 
     void show_color(int color) {
