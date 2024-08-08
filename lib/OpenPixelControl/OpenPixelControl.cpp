@@ -1,7 +1,6 @@
 #include <OpenPixelControl.h>
 #include <BranchController.h>
 #include <Util.h>
-#include <Display.h>
 #include <LED.h>
 #include <Logger.h>
 
@@ -87,7 +86,6 @@ namespace OpenPixelControl {
                 // client has disconnected!
                 client.stop();
                 Logger.println("OPC client disconnected");
-                Display::status(3, "");
                 LED::openPixelClientConnection(false);
                 status = ready;
                 return;
@@ -137,27 +135,20 @@ namespace OpenPixelControl {
                 //
                 bThrowAwayMessage = false;
 
-                char rgchError[CB_DISPLAY_LINE];
-
                 if (command != 0)
                 {
                     Logger.printf("OpenPixelControl - command %d not supported\n", command);
-                    sprintf(rgchError, "OPC BAD CMD %d", command);
-                    Display::status(3, rgchError);
                     bThrowAwayMessage = true;
                 }
                 else if (channel < 1 || channel > 8)
                 {
                     Logger.printf("OpenPixelControl - channel %d not supported\n", channel);
-                    sprintf(rgchError, "OPC BAD CHAN %d", channel);
-                    Display::status(3, rgchError);
                     channel = 1;
                     bThrowAwayMessage = true;
                 }
                 else if (cbMessage > (3 * LEDS_PER_STRIP))
                 {
                     Logger.printf("OpenPixelControl - too many pixels per strip (%d)\n", cbMessage / 3);
-                    Display::status(3, "OPC TOO MANY PIXELS");
                     bThrowAwayMessage = true;
                 }
 

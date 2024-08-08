@@ -1,7 +1,6 @@
 #include <LED.h>
 #include <Util.h>
 #include <Persist.h>
-#include <Display.h>
 #include <Logger.h>
 
 namespace LED {
@@ -167,10 +166,6 @@ namespace LED {
         cFrames++;
         if (millis() > (tmFrameStart + 1000))
         {
-            char rgchBuf[CB_DISPLAY_LINE];
-            sprintf(rgchBuf,"Frame rate: %u\n", cFrames);
-            // Logger.print(rgchBuf);
-            Display::status(2,rgchBuf);
             cFrames = 0;
             tmFrameStart = millis();
         }

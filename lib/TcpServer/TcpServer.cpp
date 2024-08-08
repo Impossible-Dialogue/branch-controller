@@ -3,7 +3,6 @@
 #include <SPI.h>
 #include <BranchController.h>
 #include <QNEthernet.h>
-#include <Display.h>
 #include <Persist.h>
 #include <MacAddress.h>
 #include <OpenPixelControl.h>

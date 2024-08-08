@@ -7,7 +7,6 @@
 #include <BranchController.h>
 #include <Heartbeat.h>
 #include <Util.h>
-#include <Display.h>
 #include <TcpServer.h>
 #include <LED.h>
 #include <Persist.h>
@@ -22,7 +21,6 @@ void setup() {
     Heartbeat::setup();
     Util::setup();
     Persist::setup();
-    Display::setup();
     TcpServer::setup();
     LED::setup();
     Imu::setup();
