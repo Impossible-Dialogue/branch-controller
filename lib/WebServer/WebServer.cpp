@@ -90,7 +90,7 @@ namespace WebServer
 
     void handleBoolResponseJson(AsyncWebServerRequest *request, String field, bool value) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
-        DynamicJsonDocument jsonDoc(1024);
+        StaticJsonDocument<256> jsonDoc;
         JsonObject root = jsonDoc.to<JsonObject>();
         if (value)
         {
@@ -131,8 +131,15 @@ namespace WebServer
         server.on("/head_orientation", HTTP_GET, [](AsyncWebServerRequest *request)
                   { request->send(200, "text/plain", String(Imu::head_orientation)); });
 
+
         server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { handleBoolResponseJson(request, "is_open", Relay.is_open()); });
+                  { 
+                    if (Relay.is_open()) {
+                        request->send(200, "text/plain", "{ \"is_open\": \"true\"}");
+                    } else {
+                        request->send(200, "text/plain", "{ \"is_open\": \"false\"}");
+                    }
+                    });
 
         server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
                   {         
