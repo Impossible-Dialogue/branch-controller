@@ -16,7 +16,7 @@ namespace Persist
         data.cb = sizeof(data);
         data.rgbSolidColor = BLACK;
         data.pattern = (uint8_t)1; // LED::patternTest
-        data.static_ip = true;
+        data.static_ip = false;
         data.ip_addr[0] = 10;
         data.ip_addr[1] = 10;
         data.ip_addr[2] = 3;
