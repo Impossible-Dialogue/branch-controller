@@ -4,6 +4,7 @@
 #include <LED.h>
 #include <Logger.h>
 #include <Imu.h>
+#include <Relay.h>
 
 #include <QNEthernet.h>
 using namespace qindesign::network;
@@ -112,6 +113,18 @@ namespace WebServer
 
         server.on("/head_orientation", HTTP_GET, [](AsyncWebServerRequest *request)
                   { request->send(200, "text/plain", String(Imu::head_orientation)); });
+
+        server.on("/relay_open", HTTP_POST, [](AsyncWebServerRequest *request)
+                  { Relay.open(); });
+
+        server.on("/relay_is_open", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { request->send(200, "text/plain", String(Relay.is_open())); });
+
+        server.on("/relay_close", HTTP_POST, [](AsyncWebServerRequest *request)
+                  { Relay.close(); });
+
+        server.on("/relay_is_closed", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { request->send(200, "text/plain", String(Relay.is_closed())); });
 
         server.onNotFound(notFound);
         server.begin();

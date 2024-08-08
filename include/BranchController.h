@@ -3,6 +3,7 @@
 #define pinIRReceiver   3
 #define pinEthernetCS   10
 #define pinHeartbeat    LED_BUILTIN
+#define pinRelay        22
 
 #define NUM_STRIPS         8
 #define LEDS_PER_STRIP 550

@@ -2,6 +2,7 @@
 #include <BranchController.h>
 #include <Logger.h>
 #include <Imu.h>
+#include <Relay.h>
 
 #if (defined(CORE_TEENSY) && defined(__IMXRT1062__) && defined(ARDUINO_TEENSY41))
 // For Teensy 4.1
@@ -90,6 +91,22 @@ namespace WebSocket
         else if (data == "imu/timestamp")
         {
             client.send(String(Imu::timestamp).c_str());
+        }
+        else if (data == "relay/open")
+        {
+            Relay.open();
+        }
+        else if (data == "relay/close")
+        {
+            Relay.close();
+        }
+        else if (data == "relay/is_open")
+        {
+            client.send(String(Relay.is_open()).c_str());
+        }
+        else if (data == "relay/is_closed")
+        {
+            client.send(String(Relay.is_closed()).c_str());
         }
         else {
             Serial.printf("Unknown WebSocket request: ");
