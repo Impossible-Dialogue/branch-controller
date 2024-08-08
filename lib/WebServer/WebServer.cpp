@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WebServer.h>
 #include <Persist.h>
 #include <LED.h>
@@ -87,6 +88,22 @@ namespace WebServer
         request->send(200, "text/html", temp);
     }
 
+    void handleJson(AsyncWebServerRequest *request, bool value) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        DynamicJsonDocument jsonDoc(1024);
+        JsonObject root = jsonDoc.to<JsonObject>();
+        if (value)
+        {
+            root["value"] = "true";
+        }
+        else
+        {
+            root["value"] = "false";
+        }
+        serializeJson(jsonDoc, *response);
+        request->send(response);
+    }
+
     void setup()
     {
         server.begin();
@@ -118,14 +135,13 @@ namespace WebServer
                   { Relay.open(); });
 
         server.on("/relay_is_open", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(200, "text/plain", String(Relay.is_open())); });
+                  { handleJson(request, Relay.is_open()); });
 
         server.on("/relay_close", HTTP_POST, [](AsyncWebServerRequest *request)
                   { Relay.close(); });
 
         server.on("/relay_is_closed", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(200, "text/plain", String(Relay.is_closed())); });
-
+                  { handleJson(request, Relay.is_closed()); });
         server.onNotFound(notFound);
         server.begin();
         Logger.println("Webserver ready");
