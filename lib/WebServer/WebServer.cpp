@@ -88,17 +88,17 @@ namespace WebServer
         request->send(200, "text/html", temp);
     }
 
-    void handleJson(AsyncWebServerRequest *request, bool value) {
+    void handleBoolResponseJson(AsyncWebServerRequest *request, String field, bool value) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         DynamicJsonDocument jsonDoc(1024);
         JsonObject root = jsonDoc.to<JsonObject>();
         if (value)
         {
-            root["value"] = "true";
+            root[field] = "true";
         }
         else
         {
-            root["value"] = "false";
+            root[field] = "false";
         }
         serializeJson(jsonDoc, *response);
         request->send(response);
@@ -131,17 +131,27 @@ namespace WebServer
         server.on("/head_orientation", HTTP_GET, [](AsyncWebServerRequest *request)
                   { request->send(200, "text/plain", String(Imu::head_orientation)); });
 
-        server.on("/relay_open", HTTP_POST, [](AsyncWebServerRequest *request)
-                  { Relay.open(); });
+        server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
+                  { handleBoolResponseJson(request, "is_open", Relay.is_open()); });
 
-        server.on("/relay_is_open", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { handleJson(request, Relay.is_open()); });
+        server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+                  {         
+                    StaticJsonDocument<256> obj;
+                    DeserializationError error = deserializeJson(obj, (const char *)data, len);
+                    if (error)
+                    {
+                        Logger.print(F("/relay failed: "));
+                        Logger.println(error.c_str());
+                        return;
+                    }
+                    if(obj["open"] == "true") {
+                        Relay.open();
+                    }
+                    else {
+                        Relay.close();
+                    }
+                    });
 
-        server.on("/relay_close", HTTP_POST, [](AsyncWebServerRequest *request)
-                  { Relay.close(); });
-
-        server.on("/relay_is_closed", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { handleJson(request, Relay.is_closed()); });
         server.onNotFound(notFound);
         server.begin();
         Logger.println("Webserver ready");
