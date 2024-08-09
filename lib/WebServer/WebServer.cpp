@@ -89,19 +89,16 @@ namespace WebServer
     }
 
     void handleBoolResponseJson(AsyncWebServerRequest *request, String field, bool value) {
-        AsyncResponseStream *response = request->beginResponseStream("application/json");
-        StaticJsonDocument<256> jsonDoc;
-        JsonObject root = jsonDoc.to<JsonObject>();
-        if (value)
-        {
-            root[field] = "true";
+        if (value) {
+            request->send(200, "text/plain", String("{ \"" + field + "\": \"true\"}"));
+        } else {
+            request->send(200, "text/plain", String ("{ \"" + field + "\": \"false\"}"));
         }
-        else
-        {
-            root[field] = "false";
-        }
-        serializeJson(jsonDoc, *response);
-        request->send(response);
+    }
+
+    void handleFloatResponseJson(AsyncWebServerRequest *request, String field, float value)
+    {
+        request->send(200, "text/plain", String("{ \"" + field + "\": \"" + String(value) + "\"}"));
     }
 
     void setup()
@@ -127,23 +124,13 @@ namespace WebServer
         server.on("/w", HTTP_GET, [](AsyncWebServerRequest *request)
                   { LED::setSolidColor(WHITE); 
                         request->redirect("/"); });
-
         server.on("/head_orientation", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(200, "text/plain", String(Imu::head_orientation)); });
-
-
+                  { handleFloatResponseJson(request, "orientation", Imu::head_orientation); });
         server.on("/relay", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { 
-                    if (Relay.is_open()) {
-                        request->send(200, "text/plain", "{ \"is_open\": \"true\"}");
-                    } else {
-                        request->send(200, "text/plain", "{ \"is_open\": \"false\"}");
-                    }
-                    });
-
+                  { handleBoolResponseJson(request, "is_open", Relay.is_open()); });
         server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
                   {         
-                    StaticJsonDocument<256> obj;
+                    JsonDocument obj;
                     DeserializationError error = deserializeJson(obj, (const char *)data, len);
                     if (error)
                     {
