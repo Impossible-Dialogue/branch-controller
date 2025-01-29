@@ -7,5 +7,5 @@ This is a fork of [jspolsky/branchController2](https://github.com/jspolsky/branc
 * Switched to QNEthernet including network configuration over HTTP
 * Added support for a BNO055 IMU
 * Added support for a relay
-* Removed a bunch of unused libraries not used by this projects (IR remote, display, etc.)
+* Removed a bunch of unused libraries (IR remote, display, etc.)
 
